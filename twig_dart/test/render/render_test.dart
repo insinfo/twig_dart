@@ -1,6 +1,7 @@
-import 'package:code_buffer/code_buffer.dart';
-import 'package:twig_dart/twig_dart.dart' as jael;
-import 'package:symbol_table/symbol_table.dart';
+import 'package:essential_code_buffer/essential_code_buffer.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
+import 'package:twig_dart/twig_dart.dart' as twig;
+
 import 'package:test/test.dart';
 
 main() {
@@ -16,24 +17,24 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    jael.Document document;
+    twig.Document document;
     SymbolTable scope;
 
     try {
-      document = jael.parseDocument(template, sourceUrl: 'test.jael');
+      document = twig.parseDocument(template, sourceUrl: 'test.jael');
       scope = SymbolTable<dynamic>(values: {
         'csrf_token': 'foo',
         'profile': {
           'avatar': 'thosakwe.png',
         }
       });
-    } on jael.TwigDartError catch (e) {
+    } on twig.TwigDartError catch (e) {
       print(e);
       print(e.stackTrace);
     }
 
     expect(document, isNotNull);
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -65,13 +66,13 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    //jael.scan(template, sourceUrl: 'test.jael').tokens.forEach(print);
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    //twig.scan(template, sourceUrl: 'test.jael').tokens.forEach(print);
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable<dynamic>(values: {
       'pokemon': const _Pokemon('Darkrai', 'Dark'),
     });
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -106,12 +107,12 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable<dynamic>(values: {
       'starters': starters,
     });
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -151,12 +152,12 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable<dynamic>(values: {
       'starters': starters,
     });
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -197,10 +198,10 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable();
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -243,10 +244,10 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable();
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -268,10 +269,10 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable();
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(
@@ -299,12 +300,12 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable<dynamic>(values: {
       'account': _Account(isDisabled: true),
     });
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(buf.toString().trim(), 'BAN HAMMER LOLOL');
@@ -326,12 +327,12 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = jael.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
     var scope = SymbolTable<dynamic>(values: {
       'account': _Account(isDisabled: null),
     });
 
-    const jael.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document, buf, scope);
     print(buf);
 
     expect(buf.toString().trim(), 'Weird...');

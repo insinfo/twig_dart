@@ -1,6 +1,8 @@
 import 'dart:convert';
-import 'package:code_buffer/code_buffer.dart';
-import 'package:symbol_table/symbol_table.dart';
+
+import 'package:essential_code_buffer/essential_code_buffer.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
+
 import 'ast/ast.dart';
 import 'text/parser.dart';
 import 'text/scanner.dart';
@@ -75,7 +77,7 @@ class Renderer {
   /// If [strictResolution] is `false` (default: `true`), then undefined identifiers will return `null`
   /// instead of throwing.
   void render(Document document, CodeBuffer buffer, SymbolTable scope, {bool strictResolution = true}) {
-    scope.create('!strict!', value: strictResolution != false);
+    scope.create('!strict!'); //value: strictResolution != false
 
     if (document.doctype != null) buffer.writeln(document.doctype.span.text);
     renderElement(document.root, buffer, scope, document.doctype?.public == null);

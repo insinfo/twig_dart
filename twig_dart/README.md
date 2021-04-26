@@ -1,5 +1,5 @@
-# jael
-<!--
+# twig_dart
+<!---
 [![Pub](https://img.shields.io/pub/v/jael.svg)](https://pub.dartlang.org/packages/jael)
 [![build status](https://travis-ci.org/angel-dart/jael.svg)](https://travis-ci.org/angel-dart/jael)
 -->
@@ -38,7 +38,7 @@ void myFunction() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig_dart.parseDocument(template, sourceUrl: 'test.twig_dart', asDSX: false);
+    var document = twig_dart.parseDocument(template, sourceUrl: 'test.twig', asDSX: false);
     var scope = SymbolTable(values: {
       'profile': {
         'avatar': 'thosakwe.png',

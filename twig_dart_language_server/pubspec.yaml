@@ -2,7 +2,7 @@ name: twig_dart_language_server
 version: 0.0.0
 description: Language Server Protocol implementation for the Jael templating engine.
 author: Isaque Neves <insinfo2008@gmail.com>
-homepage: https://github.com/angel-dart/vscode
+homepage: https://github.com/insinfo/twig_dart
 environment:
   sdk: ">=2.0.0-dev <3.0.0"
 dependencies:

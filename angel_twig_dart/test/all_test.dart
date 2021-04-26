@@ -46,7 +46,7 @@ main() {
     });
 
     await app.configure(
-      jael(viewsDirectory),
+      twig(viewsDirectory),
     );
 
     app.fallback((req, res) => throw new AngelHttpException.notFound());

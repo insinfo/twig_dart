@@ -1,5 +1,6 @@
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:source_span/source_span.dart';
-import 'package:symbol_table/symbol_table.dart';
+
 import 'ast_node.dart';
 import 'expression.dart';
 import 'identifier.dart';
@@ -11,20 +12,17 @@ class Call extends Expression {
   final List<Expression> arguments;
   final List<NamedArgument> namedArguments;
 
-  Call(this.target, this.lParen, this.rParen, this.arguments,
-      this.namedArguments);
+  Call(this.target, this.lParen, this.rParen, this.arguments, this.namedArguments);
 
   @override
   FileSpan get span {
     return arguments
         .fold<FileSpan>(target.span, (out, a) => out.expand(a.span))
-        .expand(namedArguments.fold<FileSpan>(
-            lParen.span, (out, a) => out.expand(a.span)))
+        .expand(namedArguments.fold<FileSpan>(lParen.span, (out, a) => out.expand(a.span)))
         .expand(rParen.span);
   }
 
-  List computePositional(SymbolTable scope) =>
-      arguments.map((e) => e.compute(scope)).toList();
+  List computePositional(SymbolTable scope) => arguments.map((e) => e.compute(scope)).toList();
 
   Map<Symbol, dynamic> computeNamed(SymbolTable scope) {
     return namedArguments.fold<Map<Symbol, dynamic>>({}, (out, a) {

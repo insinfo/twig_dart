@@ -1,6 +1,7 @@
 import 'dart:mirrors';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:source_span/source_span.dart';
-import 'package:symbol_table/symbol_table.dart';
+
 import 'expression.dart';
 import 'identifier.dart';
 import 'token.dart';

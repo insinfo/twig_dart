@@ -11,7 +11,7 @@ main() async {
   var fileSystem = const LocalFileSystem();
 
   await app.configure(
-    jael(fileSystem.directory('views')),
+    twig(fileSystem.directory('views')),
   );
 
   app.get('/', (req, res) => res.render('index', {'title': 'Sample App', 'message': null}));

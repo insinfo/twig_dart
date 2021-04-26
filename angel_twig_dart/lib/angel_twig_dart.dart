@@ -5,13 +5,13 @@ import 'package:jael/jael.dart';
 import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart';
 import 'package:symbol_table/symbol_table.dart';
 
-/// Configures an Angel server to use Jael to render templates.
+/// Configures an Angel server to use twig to render templates.
 ///
 /// To enable "minified" output, you need to override the [createBuffer] function,
 /// to instantiate a [CodeBuffer] that emits no spaces or line breaks.
 ///
 /// To apply additional transforms to parsed documents, provide a set of [patch] functions.
-AngelConfigurer jael(Directory viewsDirectory,
+AngelConfigurer twig(Directory viewsDirectory,
     {String fileExtension,
     bool strictResolution: false,
     bool cacheViews: false,

@@ -1,5 +1,5 @@
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:twig_dart/twig_dart.dart';
-import 'package:symbol_table/symbol_table.dart';
 import 'package:test/test.dart';
 
 void main() {

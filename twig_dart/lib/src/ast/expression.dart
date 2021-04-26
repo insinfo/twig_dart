@@ -1,5 +1,6 @@
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:source_span/source_span.dart';
-import 'package:symbol_table/symbol_table.dart';
+
 import 'ast_node.dart';
 import 'token.dart';
 
