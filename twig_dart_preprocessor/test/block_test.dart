@@ -1,9 +1,10 @@
-import 'package:code_buffer/code_buffer.dart';
+import 'package:essential_code_buffer/essential_code_buffer.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:jael/jael.dart' as jael;
+import 'package:twig_dart/twig_dart.dart' as jael;
 import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as jael;
-import 'package:symbol_table/symbol_table.dart';
+
 import 'package:test/test.dart';
 
 main() {
@@ -53,9 +54,10 @@ main() {
     var original = jael.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e);
     var processed =
         await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
+
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed, buf, scope);
+    const jael.Renderer().render(processed as jael.Document, buf, scope);
     print(buf);
 
     expect(
@@ -78,7 +80,7 @@ main() {
         await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed, buf, scope);
+    const jael.Renderer().render(processed as jael.Document, buf, scope);
     print(buf);
 
     expect(
@@ -103,7 +105,7 @@ main() {
         await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed, buf, scope);
+    const jael.Renderer().render(processed as jael.Document, buf, scope);
     print(buf);
 
     expect(
@@ -126,7 +128,7 @@ main() {
         await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed, buf, scope);
+    const jael.Renderer().render(processed as jael.Document, buf, scope);
     print(buf);
 
     expect(

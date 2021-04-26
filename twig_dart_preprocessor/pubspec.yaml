@@ -3,12 +3,16 @@ version: 2.0.1
 description: A pre-processor for resolving blocks and includes within Jael templates.
 author: Isaque Neves <insinfo2008@gmail.com>
 homepage: https://github.com/insinfo/twig_dart
+
 environment:
-  sdk: ">=2.0.0-dev <3.0.0"
+  sdk: ">=2.0.0 <3.0.0"
+
 dependencies:
-  file: ^5.0.0
-  jael: ^2.0.0
-  symbol_table: ^2.0.0
+  #file: ^5.0.0
+  file: ^6.1.0 #Null safety
+  twig_dart: ^2.0.2
+  essential_symbol_table: ^2.0.1 #Null safety
+  
 dev_dependencies:
-  code_buffer:
-  test: ^1.0.0
+  essential_code_buffer: ^2.0.1 #Null safety
+  test: ^1.17.2 #Null safety

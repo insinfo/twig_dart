@@ -6,15 +6,17 @@ homepage: https://github.com/insinfo/twig_dart
 environment:
   sdk: ">=2.0.0-dev <=3.0.0"
 dependencies:
-  angel_framework: ^2.0.0-alpha
+  angel_framework: ^2.1.1
   code_buffer: ^1.0.0
-  file: ^5.0.0
-  jael: ^2.0.0
+  file: ^6.1.0
+  #jael: ^2.0.0
+  twig_dart: ^2.0.2
   
   twig_dart_preprocessor: #^2.0.0
     path: ../twig_dart_preprocessor
 
   symbol_table: ^2.0.0
+  
 dev_dependencies:
   angel_test: ^2.0.0-alpha
   html:

@@ -1,9 +1,10 @@
-import 'package:code_buffer/code_buffer.dart';
+import 'package:essential_code_buffer/essential_code_buffer.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:jael/jael.dart' as jael;
+import 'package:twig_dart/twig_dart.dart' as jael;
 import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as jael;
-import 'package:symbol_table/symbol_table.dart';
+
 import 'package:test/test.dart';
 
 main() {

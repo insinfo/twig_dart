@@ -1,14 +1,8 @@
 # twig_dart
-<!---
-[![Pub](https://img.shields.io/pub/v/jael.svg)](https://pub.dartlang.org/packages/jael)
-[![build status](https://travis-ci.org/angel-dart/jael.svg)](https://travis-ci.org/angel-dart/jael)
--->
+
 
 A simple server-side HTML templating engine for Dart.
 
-<!--
-[See documentation.](https://docs.angel-dart.dev/packages/front-end/jael)
--->
 
 # Installation
 In your `pubspec.yaml`:
@@ -51,4 +45,4 @@ void myFunction() {
 ```
 
 Pre-processing (i.e. handling of blocks and includes) is handled
-by `package:jael_preprocessor.`.
+by `package:twig_dart_preprocessor.`.
