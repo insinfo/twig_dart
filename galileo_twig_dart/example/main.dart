@@ -1,17 +1,17 @@
 import 'dart:convert';
-import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_framework/http.dart';
-import 'package:angel_twig_dart/angel_twig_dart.dart';
+import 'package:galileo_framework/galileo_framework.dart';
+import 'package:galileo_framework/http.dart';
+import 'package:galileo_twig_dart/galileo_twig_dart.dart';
 import 'package:file/local.dart';
 import 'package:logging/logging.dart';
 
 main() async {
-  var app = new Angel();
-  var http = new AngelHttp(app);
+  var app = new Galileo();
+  var http = new GalileoHttp(app);
   var fileSystem = const LocalFileSystem();
 
   await app.configure(
-    twig(fileSystem.directory('views')),
+    twig(fileSystem.directory('D:\\MyDartProjects\\twig_dart\\galileo_twig_dart\\example\\views')),
   );
 
   app.get('/', (req, res) => res.render('index', {'title': 'Sample App', 'message': null}));
@@ -27,9 +27,9 @@ main() async {
     });
   });
 
-  app.fallback((req, res) => throw new AngelHttpException.notFound());
+  app.fallback((req, res) => throw new GalileoHttpException.notFound());
 
-  app.logger = new Logger('angel')
+  app.logger = new Logger('galileo')
     ..onRecord.listen((rec) {
       print(rec);
       if (rec.error != null) print(rec.error);

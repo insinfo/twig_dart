@@ -2,6 +2,6 @@
 # Fast-fail on errors
 set -e
 
-cd jael && pub get && pub run test
-cd ../jael_preprocessor/ && pub get && pub run test
-cd ../angel_jael/ && pub get && pub run test
+cd twig && pub get && pub run test
+cd ../twig_preprocessor/ && pub get && pub run test
+cd ../galileo_twig/ && pub get && pub run test

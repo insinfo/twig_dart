@@ -2,13 +2,13 @@ import 'package:essential_code_buffer/essential_code_buffer.dart';
 import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:twig_dart/twig_dart.dart' as jael;
-import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as jael;
+import 'package:twig_dart/twig_dart.dart' as twig;
+import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as twig;
 
 import 'package:test/test.dart';
 
 main() {
-  FileSystem fileSystem;
+  late FileSystem fileSystem;
 
   setUp(() {
     fileSystem = new MemoryFileSystem();
@@ -33,7 +33,7 @@ main() {
 
     // e.jl
     fileSystem.file('e.jl').writeAsStringSync(
-        '<extend src="c.jl"><block name="greeting">Angel <b><block name="name">default</block></b></block></extend>');
+        '<extend src="c.jl"><block name="greeting">Galileo <b><block name="name">default</block></b></block></extend>');
 
     // fox.jl
     fileSystem.file('fox.jl').writeAsStringSync(
@@ -51,13 +51,14 @@ main() {
 
   test('blocks are replaced or kept', () async {
     var file = fileSystem.file('c.jl');
-    var original = jael.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e);
-    var processed =
-        await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
+    var original = twig.parseDocument(await file.readAsString(),
+        sourceUrl: file.uri, onError: (e) => throw (e is Exception ? e : e as Error))!;
+    var processed = await (twig.resolve(original, fileSystem.directory(fileSystem.currentDirectory),
+        onError: (e) => throw (e is Exception ? e : e as Error)));
 
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed as jael.Document, buf, scope);
+    const twig.Renderer().render(processed as twig.Document, buf, scope);
     print(buf);
 
     expect(
@@ -75,12 +76,12 @@ main() {
 
   test('block defaults are emitted', () async {
     var file = fileSystem.file('b.jl');
-    var original = jael.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e);
-    var processed =
-        await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
+    var original = twig.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e)!;
+    var processed = await (twig.resolve(original, fileSystem.directory(fileSystem.currentDirectory),
+        onError: (e) => throw (e is Exception ? e : e as Error)));
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed as jael.Document, buf, scope);
+    const twig.Renderer().render(processed as twig.Document, buf, scope);
     print(buf);
 
     expect(
@@ -100,12 +101,12 @@ main() {
 
   test('block resolution only redefines blocks at one level at a time', () async {
     var file = fileSystem.file('d.jl');
-    var original = jael.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e);
-    var processed =
-        await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
+    var original = twig.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e)!;
+    var processed = await (twig.resolve(original, fileSystem.directory(fileSystem.currentDirectory),
+        onError: (e) => throw (e is Exception ? e : e as Error)));
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed as jael.Document, buf, scope);
+    const twig.Renderer().render(processed!, buf, scope);
     print(buf);
 
     expect(
@@ -123,12 +124,12 @@ main() {
 
   test('blocks within blocks', () async {
     var file = fileSystem.file('foxtrot.jl');
-    var original = jael.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e);
-    var processed =
-        await jael.resolve(original, fileSystem.directory(fileSystem.currentDirectory), onError: (e) => throw e);
+    var original = twig.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e)!;
+    var processed = await (twig.resolve(original, fileSystem.directory(fileSystem.currentDirectory),
+        onError: (e) => throw (e is Exception ? e : e as Error)));
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed as jael.Document, buf, scope);
+    const twig.Renderer().render(processed!, buf, scope);
     print(buf);
 
     expect(

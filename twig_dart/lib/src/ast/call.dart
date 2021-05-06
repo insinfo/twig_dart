@@ -7,8 +7,8 @@ import 'identifier.dart';
 import 'token.dart';
 
 class Call extends Expression {
-  final Expression target;
-  final Token lParen, rParen;
+  final Expression? target;
+  final Token? lParen, rParen;
   final List<Expression> arguments;
   final List<NamedArgument> namedArguments;
 
@@ -17,14 +17,14 @@ class Call extends Expression {
   @override
   FileSpan get span {
     return arguments
-        .fold<FileSpan>(target.span, (out, a) => out.expand(a.span))
-        .expand(namedArguments.fold<FileSpan>(lParen.span, (out, a) => out.expand(a.span)))
-        .expand(rParen.span);
+        .fold<FileSpan?>(target!.span, (out, a) => out!.expand(a.span!))!
+        .expand(namedArguments.fold<FileSpan?>(lParen!.span, (out, a) => out!.expand(a.span))!)
+        .expand(rParen!.span!);
   }
 
-  List computePositional(SymbolTable scope) => arguments.map((e) => e.compute(scope)).toList();
+  List computePositional(SymbolTable? scope) => arguments.map((e) => e.compute(scope)).toList();
 
-  Map<Symbol, dynamic> computeNamed(SymbolTable scope) {
+  Map<Symbol, dynamic> computeNamed(SymbolTable? scope) {
     return namedArguments.fold<Map<Symbol, dynamic>>({}, (out, a) {
       return out..[Symbol(a.name.name)] = a.value.compute(scope);
     });
@@ -32,7 +32,7 @@ class Call extends Expression {
 
   @override
   compute(scope) {
-    var callee = target.compute(scope);
+    var callee = target!.compute(scope);
     var args = computePositional(scope);
     var named = computeNamed(scope);
 
@@ -42,13 +42,13 @@ class Call extends Expression {
 
 class NamedArgument extends AstNode {
   final Identifier name;
-  final Token colon;
+  final Token? colon;
   final Expression value;
 
   NamedArgument(this.name, this.colon, this.value);
 
   @override
   FileSpan get span {
-    return name.span.expand(colon.span).expand(value.span);
+    return name.span!.expand(colon!.span!).expand(value.span!);
   }
 }

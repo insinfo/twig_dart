@@ -1,17 +1,18 @@
-import 'package:angel_framework/angel_framework.dart';
-import 'package:code_buffer/code_buffer.dart';
+import 'package:galileo_framework/galileo_framework.dart';
+import 'package:essential_code_buffer/essential_code_buffer.dart';
 import 'package:file/file.dart';
+import 'package:twig_dart/twig_dart.dart';
 
 import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart';
-import 'package:symbol_table/symbol_table.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 
-/// Configures an Angel server to use twig to render templates.
+/// Configures an Galileo server to use twig to render templates.
 ///
 /// To enable "minified" output, you need to override the [createBuffer] function,
 /// to instantiate a [CodeBuffer] that emits no spaces or line breaks.
 ///
 /// To apply additional transforms to parsed documents, provide a set of [patch] functions.
-AngelConfigurer twig(Directory viewsDirectory,
+GalileoConfigurer twig(Directory viewsDirectory,
     {String fileExtension,
     bool strictResolution: false,
     bool cacheViews: false,
@@ -19,12 +20,12 @@ AngelConfigurer twig(Directory viewsDirectory,
     bool asDSX: false,
     CodeBuffer createBuffer()}) {
   var cache = <String, Document>{};
-  fileExtension ??= '.jael';
+  fileExtension ??= '.twig';
   createBuffer ??= () => new CodeBuffer();
 
-  return (Angel app) async {
+  return (Galileo app) async {
     app.viewGenerator = (String name, [Map locals]) async {
-      var errors = <JaelError>[];
+      var errors = <TwigDartError>[];
       Document processed;
 
       if (cacheViews == true && cache.containsKey(name)) {
@@ -36,7 +37,7 @@ AngelConfigurer twig(Directory viewsDirectory,
         processed = doc;
 
         try {
-          processed = await resolve(doc, viewsDirectory, patch: patch, onError: errors.add);
+          processed = await resolve(doc, viewsDirectory, patch: patch, onError: (e) => errors.add(e as TwigDartError));
         } catch (_) {
           // Ignore these errors, so that we can show syntax errors.
         }
@@ -56,7 +57,7 @@ AngelConfigurer twig(Directory viewsDirectory,
         try {
           const Renderer().render(processed, buf, scope, strictResolution: strictResolution == true);
           return buf.toString();
-        } on JaelError catch (e) {
+        } on TwigDartError catch (e) {
           errors.add(e);
         }
       }

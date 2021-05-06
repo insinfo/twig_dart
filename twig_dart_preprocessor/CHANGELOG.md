@@ -1,3 +1,6 @@
+# 3.0.0
+- update to null safety
+
 # 2.0.1
 * Fixed a bug where failed file resolutions would not become proper errors.
 

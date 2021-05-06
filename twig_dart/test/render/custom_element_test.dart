@@ -107,8 +107,8 @@ void main() {
   });
 }
 
-String render(String template, [Map<String, dynamic> values]) {
-  var doc = twig_dart.parseDocument(template, onError: (e) => throw e);
+String render(String template, [Map<String, dynamic>? values]) {
+  var doc = twig_dart.parseDocument(template, onError: (e) => throw e)!;
   var buffer = CodeBuffer();
   const twig_dart.Renderer().render(doc, buffer, SymbolTable(values: values));
   return buffer.toString();

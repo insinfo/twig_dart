@@ -2,13 +2,13 @@ import 'package:essential_code_buffer/essential_code_buffer.dart';
 import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:twig_dart/twig_dart.dart' as jael;
-import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as jael;
+import 'package:twig_dart/twig_dart.dart' as twig;
+import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as twig;
 
 import 'package:test/test.dart';
 
 main() {
-  FileSystem fileSystem;
+  late FileSystem fileSystem;
 
   setUp(() {
     fileSystem = new MemoryFileSystem();
@@ -25,12 +25,13 @@ main() {
 
   test('includes are expanded', () async {
     var file = fileSystem.file('c.jl');
-    var original = jael.parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: (e) => throw e);
-    var processed =
-        await jael.resolveIncludes(original, fileSystem.directory(fileSystem.currentDirectory), (e) => throw e);
+    var original = twig.parseDocument(await file.readAsString(),
+        sourceUrl: file.uri, onError: (e) => throw (e is Exception ? e : e as Error))!;
+    var processed = await twig.resolveIncludes(
+        original, fileSystem.directory(fileSystem.currentDirectory), (e) => throw (e is Exception ? e : e as Error));
     var buf = new CodeBuffer();
     var scope = new SymbolTable();
-    const jael.Renderer().render(processed, buf, scope);
+    const twig.Renderer().render(processed, buf, scope);
     print(buf);
 
     expect(

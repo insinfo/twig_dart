@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:essential_code_buffer/essential_code_buffer.dart';
 import 'package:essential_symbol_table/essential_symbol_table.dart';
 
@@ -8,7 +9,7 @@ import 'text/parser.dart';
 import 'text/scanner.dart';
 
 /// Parses a TwigDart  document.
-Document parseDocument(String text, {sourceUrl, bool asDSX = false, void onError(TwigDartError error)}) {
+Document? parseDocument(String text, {sourceUrl, bool asDSX = false, void onError(TwigDartError error)?}) {
   var scanner = scan(text, sourceUrl: sourceUrl, asDSX: asDSX);
 
   //scanner.tokens.forEach(print);
@@ -54,11 +55,11 @@ class Renderer {
       buf
         ..writeln('<li>')
         ..indent()
-        ..writeln('<b>$type:</b> ${error.span.start.toolString}: ${error.message}')
+        ..writeln('<b>$type:</b> ${error.span!.start.toolString}: ${error.message}')
         ..writeln('<br>')
         ..writeln(
           '<span style="color: red;">' +
-              htmlEscape.convert(error.span.highlight(color: false)).replaceAll('\n', '<br>') +
+              htmlEscape.convert(error.span!.highlight(color: false)).replaceAll('\n', '<br>') +
               '</span>',
         )
         ..outdent()
@@ -79,7 +80,7 @@ class Renderer {
   void render(Document document, CodeBuffer buffer, SymbolTable scope, {bool strictResolution = true}) {
     scope.create('!strict!'); //value: strictResolution != false
 
-    if (document.doctype != null) buffer.writeln(document.doctype.span.text);
+    if (document.doctype != null) buffer.writeln(document.doctype!.span.text);
     renderElement(document.root, buffer, scope, document.doctype?.public == null);
   }
 
@@ -168,13 +169,13 @@ class Renderer {
     var attribute = element.attributes.singleWhere((a) => a.name == 'for-each');
     if (attribute.value == null) return;
 
-    var asAttribute = element.attributes.firstWhere((a) => a.name == 'as', orElse: () => null);
-    var indexAsAttribute = element.attributes.firstWhere((a) => a.name == 'index-as', orElse: () => null);
+    var asAttribute = element.attributes.firstWhereOrNull((a) => a.name == 'as');
+    var indexAsAttribute = element.attributes.firstWhereOrNull((a) => a.name == 'index-as');
     var alias = asAttribute?.value?.compute(scope)?.toString() ?? 'item';
     var indexAs = indexAsAttribute?.value?.compute(scope)?.toString() ?? 'i';
     var otherAttributes =
         element.attributes.where((a) => a.name != 'for-each' && a.name != 'as' && a.name != 'index-as');
-    Element strippedElement;
+    late Element strippedElement;
 
     if (element is SelfClosingElement) {
       strippedElement = SelfClosingElement(element.lt, element.tagName, otherAttributes, element.slash, element.gt);
@@ -184,7 +185,7 @@ class Renderer {
     }
 
     int i = 0;
-    for (var item in attribute.value.compute(scope)) {
+    for (var item in attribute.value!.compute(scope)) {
       var childScope = scope.createChild(values: {alias: item, indexAs: i++});
       renderElement(strippedElement, buffer, childScope, html5);
     }
@@ -193,7 +194,7 @@ class Renderer {
   void renderIf(Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
     var attribute = element.attributes.singleWhere((a) => a.name == 'if');
 
-    var vv = attribute.value.compute(scope);
+    var vv = attribute.value!.compute(scope);
 
     if (scope.resolve('!strict!')?.value == false) {
       vv = vv == true;
@@ -204,7 +205,7 @@ class Renderer {
     if (!v) return;
 
     var otherAttributes = element.attributes.where((a) => a.name != 'if');
-    Element strippedElement;
+    late Element strippedElement;
 
     if (element is SelfClosingElement) {
       strippedElement = SelfClosingElement(element.lt, element.tagName, otherAttributes, element.slash, element.gt);
@@ -228,12 +229,12 @@ class Renderer {
   }
 
   void renderSwitch(Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
-    var value = element.attributes.firstWhere((a) => a.name == 'value', orElse: () => null)?.value?.compute(scope);
+    var value = element.attributes.firstWhereOrNull((a) => a.name == 'value')?.value?.compute(scope);
 
     var cases = element.children.whereType<Element>().where((c) => c.tagName.name == 'case');
 
     for (var child in cases) {
-      var comparison = child.attributes.firstWhere((a) => a.name == 'value', orElse: () => null)?.value?.compute(scope);
+      var comparison = child.attributes.firstWhereOrNull((a) => a.name == 'value')?.value?.compute(scope);
       if (comparison == value) {
         for (int i = 0; i < child.children.length; i++) {
           var c = child.children.elementAt(i);
@@ -244,10 +245,9 @@ class Renderer {
       }
     }
 
-    var defaultCase =
-        element.children.firstWhere((c) => c is Element && c.tagName.name == 'default', orElse: () => null) as Element;
+    var defaultCase = element.children.firstWhereOrNull((c) => c is Element && c.tagName.name == 'default') as Element?;
     if (defaultCase != null) {
-      for (int i = 0; i < defaultCase.children.length; i++) {
+      for (var i = 0; i < defaultCase.children.length; i++) {
         var child = defaultCase.children.elementAt(i);
         renderElementChild(element, child, buffer, scope, html5, i, defaultCase.children.length);
       }
@@ -256,13 +256,13 @@ class Renderer {
 
   void renderElementChild(
       Element parent, ElementChild child, CodeBuffer buffer, SymbolTable scope, bool html5, int index, int total) {
-    if (child is Text && parent?.tagName?.name != 'textarea') {
+    if (child is Text && parent.tagName.name != 'textarea') {
       if (index == 0) {
-        buffer.write(child.span.text.trimLeft());
+        buffer.write(child.span!.text.trimLeft());
       } else if (index == total - 1) {
-        buffer.write(child.span.text.trimRight());
+        buffer.write(child.span!.text.trimRight());
       } else {
-        buffer.write(child.span.text);
+        buffer.write(child.span!.text);
       }
     } else if (child is Interpolation) {
       var value = child.expression.compute(scope);
@@ -275,7 +275,7 @@ class Renderer {
         }
       }
     } else if (child is Element) {
-      if (buffer?.lastLine?.text?.isNotEmpty == true) buffer.writeln();
+      if (buffer.lastLine?.text.isNotEmpty == true) buffer.writeln();
       renderElement(child, buffer, scope, html5);
     }
   }
@@ -295,16 +295,16 @@ class Renderer {
     }
 
     try {
-      var p = scope.isRoot ? scope : scope.parent;
+      var p = scope.isRoot ? scope : scope.parent!;
       p.create(customElementName(name), value: element, constant: true);
     } on StateError {
       throw TwigDartError(TwigDartErrorSeverity.error, "Cannot re-define element '$name' in this scope.",
-          element.getAttribute('name').span);
+          element.getAttribute('name')!.span);
     }
   }
 
   void renderCustomElement(Element element, CodeBuffer buffer, SymbolTable scope, bool html5) {
-    var template = scope.resolve(customElementName(element.tagName.name)).value as RegularElement;
+    var template = scope.resolve(customElementName(element.tagName.name))!.value as RegularElement?;
     var renderAs = element.getAttribute('as')?.value?.compute(scope);
     var attrs = element.attributes.where((a) => a.name != 'as');
 
@@ -315,7 +315,7 @@ class Renderer {
     }
 
     if (renderAs == false) {
-      for (int i = 0; i < template.children.length; i++) {
+      for (int i = 0; i < template!.children.length; i++) {
         var child = template.children.elementAt(i);
         renderElementChild(element, child, buffer, scope, html5, i, element.children.length);
       }
@@ -323,7 +323,7 @@ class Renderer {
       var tagName = renderAs?.toString() ?? 'div';
 
       var syntheticElement = RegularElement(
-          template.lt,
+          template!.lt,
           SyntheticIdentifier(tagName),
           element.attributes.where((a) => a.name != 'as' && !a.name.startsWith('@')),
           template.gt,

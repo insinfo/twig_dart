@@ -1,6 +1,9 @@
+# 3.0.0
+- update dependencies
+
 # 2.0.2
 * Fixed handling of `if` in non-strict mode.
-* Roll `JaelFormatter` and `jaelfmt`.
+* Roll `TwigFormatter` and `twigfmt`.
 
 # 2.0.1
 * Fixed bug where the `textarea` name check would never return `true`.
@@ -38,5 +41,5 @@ followed by free text.
 
 # 1.0.1
 * Reworked the scanner; thereby fixing an extremely pesky bug
-that prevented successful parsing of Jael files containing
+that prevented successful parsing of Twig files containing
 JavaScript.

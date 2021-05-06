@@ -5,7 +5,7 @@ import 'common.dart';
 
 main() {
   test('plain html', () {
-    var tokens = scan('<img src="foo.png" />', sourceUrl: 'test.jael').tokens;
+    var tokens = scan('<img src="foo.png" />', sourceUrl: 'test.twig').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(7));
@@ -19,7 +19,7 @@ main() {
   });
 
   test('single quotes', () {
-    var tokens = scan('<p>It\'s lit</p>', sourceUrl: 'test.jael').tokens;
+    var tokens = scan('<p>It\'s lit</p>', sourceUrl: 'test.twig').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(8));
@@ -34,7 +34,7 @@ main() {
   });
 
   test('text node', () {
-    var tokens = scan('<p>Hello\nworld</p>', sourceUrl: 'test.jael').tokens;
+    var tokens = scan('<p>Hello\nworld</p>', sourceUrl: 'test.twig').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(8));
@@ -49,7 +49,7 @@ main() {
   });
 
   test('mixed', () {
-    var tokens = scan('<ul number=1 + 2>three{{four > five.six}}</ul>', sourceUrl: 'test.jael').tokens;
+    var tokens = scan('<ul number=1 + 2>three{{four > five.six}}</ul>', sourceUrl: 'test.twig').tokens;
     tokens.forEach(print);
 
     expect(tokens, hasLength(20));
@@ -83,7 +83,7 @@ main() {
 </script>
 '''
           .trim(),
-      sourceUrl: 'test.jael',
+      sourceUrl: 'test.twig',
     ).tokens;
     tokens.forEach(print);
 

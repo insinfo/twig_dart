@@ -17,11 +17,11 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    twig.Document document;
-    SymbolTable scope;
+    twig.Document? document;
+    late SymbolTable scope;
 
     try {
-      document = twig.parseDocument(template, sourceUrl: 'test.jael');
+      document = twig.parseDocument(template, sourceUrl: 'test.twig');
       scope = SymbolTable<dynamic>(values: {
         'csrf_token': 'foo',
         'profile': {
@@ -34,7 +34,7 @@ main() {
     }
 
     expect(document, isNotNull);
-    const twig.Renderer().render(document, buf, scope);
+    const twig.Renderer().render(document!, buf, scope);
     print(buf);
 
     expect(
@@ -66,8 +66,8 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    //twig.scan(template, sourceUrl: 'test.jael').tokens.forEach(print);
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    //twig.scan(template, sourceUrl: 'test.twig').tokens.forEach(print);
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable<dynamic>(values: {
       'pokemon': const _Pokemon('Darkrai', 'Dark'),
     });
@@ -107,7 +107,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable<dynamic>(values: {
       'starters': starters,
     });
@@ -152,7 +152,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable<dynamic>(values: {
       'starters': starters,
     });
@@ -198,7 +198,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable();
 
     const twig.Renderer().render(document, buf, scope);
@@ -244,7 +244,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable();
 
     const twig.Renderer().render(document, buf, scope);
@@ -269,7 +269,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable();
 
     const twig.Renderer().render(document, buf, scope);
@@ -300,7 +300,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable<dynamic>(values: {
       'account': _Account(isDisabled: true),
     });
@@ -327,7 +327,7 @@ main() {
 ''';
 
     var buf = CodeBuffer();
-    var document = twig.parseDocument(template, sourceUrl: 'test.jael');
+    var document = twig.parseDocument(template, sourceUrl: 'test.twig')!;
     var scope = SymbolTable<dynamic>(values: {
       'account': _Account(isDisabled: null),
     });
@@ -352,7 +352,7 @@ class _Pokemon {
 }
 
 class _Account {
-  final bool isDisabled;
+  final bool? isDisabled;
 
   _Account({this.isDisabled});
 }

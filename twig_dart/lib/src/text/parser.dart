@@ -7,12 +7,12 @@ class Parser {
   final Scanner scanner;
   final bool asDSX;
 
-  Token _current;
+  Token? _current;
   int _index = -1;
 
   Parser(this.scanner, {this.asDSX = false});
 
-  Token get current => _current;
+  Token? get current => _current;
 
   int _nextPrecedence() {
     var tok = peek();
@@ -33,12 +33,12 @@ class Parser {
     return true;
   }
 
-  Token peek() {
+  Token? peek() {
     if (_index >= scanner.tokens.length - 1) return null;
     return scanner.tokens[_index + 1];
   }
 
-  Token maybe(TokenType type) => next(type) ? _current : null;
+  Token? maybe(TokenType type) => next(type) ? _current : null;
 
   void skipExtraneous(TokenType type) {
     while (next(type)) {
@@ -46,7 +46,7 @@ class Parser {
     }
   }
 
-  Document parseDocument() {
+  Document? parseDocument() {
     var doctype = parseDoctype();
 
     if (doctype == null) {
@@ -66,9 +66,9 @@ class Parser {
     return Document(doctype, root);
   }
 
-  StringLiteral implicitString() {
+  StringLiteral? implicitString() {
     if (next(TokenType.string)) {
-      return prefixParselets[TokenType.string].parse(this, _current) as StringLiteral;
+      return prefixParselets[TokenType.string]!.parse(this, _current) as StringLiteral?;
     }
     /*else if (next(TokenType.text)) {
 
@@ -77,7 +77,7 @@ class Parser {
     return null;
   }
 
-  Doctype parseDoctype() {
+  Doctype? parseDoctype() {
     if (!next(TokenType.lt)) return null;
     var lt = _current;
 
@@ -88,23 +88,23 @@ class Parser {
     var doctype = _current, html = parseIdentifier();
     if (html?.span?.text?.toLowerCase() != 'html') {
       errors.add(TwigDartError(
-          TwigDartErrorSeverity.error, 'Expected "html" in doctype declaration.', html?.span ?? doctype.span));
+          TwigDartErrorSeverity.error, 'Expected "html" in doctype declaration.', html?.span ?? doctype!.span));
       return null;
     }
 
     var public = parseIdentifier();
     if (public == null) {
       if (!next(TokenType.gt)) {
-        errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Expected ">" in doctype declaration.', html.span));
+        errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Expected ">" in doctype declaration.', html!.span));
         return null;
       }
 
-      return Doctype(lt, doctype, html, null, null, null, _current);
+      return Doctype(lt, doctype, html as Identifier?, null, null, null, _current);
     }
 
-    if (public?.span?.text?.toLowerCase() != 'public') {
+    if (public.span?.text.toLowerCase() != 'public') {
       errors.add(TwigDartError(
-          TwigDartErrorSeverity.error, 'Expected "public" in doctype declaration.', public?.span ?? html.span));
+          TwigDartErrorSeverity.error, 'Expected "public" in doctype declaration.', public.span ?? html!.span));
       return null;
     }
 
@@ -115,37 +115,38 @@ class Parser {
       return null;
     }
 
-    var name = stringParser.parse(this, _current) as StringLiteral;
+    var name = stringParser!.parse(this, _current) as StringLiteral?;
 
     if (!next(TokenType.string)) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Expected string in doctype declaration.', name.span));
+      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Expected string in doctype declaration.', name!.span));
       return null;
     }
 
-    var url = stringParser.parse(this, _current) as StringLiteral;
+    var url = stringParser.parse(this, _current) as StringLiteral?;
 
     if (!next(TokenType.gt)) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Expected ">" in doctype declaration.', url.span));
+      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Expected ">" in doctype declaration.', url!.span));
       return null;
     }
 
-    return Doctype(lt, doctype, html, public, name, url, _current);
+    return Doctype(lt, doctype, html as Identifier?, public, name, url, _current);
   }
 
-  ElementChild parseElementChild() => parseHtmlComment() ?? parseInterpolation() ?? parseText() ?? parseElement();
+  ElementChild? parseElementChild() => parseHtmlComment() ?? parseInterpolation() ?? parseText() ?? parseElement();
 
-  HtmlComment parseHtmlComment() => next(TokenType.htmlComment) ? HtmlComment(_current) : null;
+  HtmlComment? parseHtmlComment() => next(TokenType.htmlComment) ? HtmlComment(_current) : null;
 
-  Text parseText() => next(TokenType.text) ? Text(_current) : null;
+  Text? parseText() => next(TokenType.text) ? Text(_current) : null;
 
-  Interpolation parseInterpolation() {
+  Interpolation? parseInterpolation() {
     if (!next(asDSX ? TokenType.lCurly : TokenType.lDoubleCurly)) return null;
     var doubleCurlyL = _current;
 
     var expression = parseExpression(0);
 
     if (expression == null) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in interpolation.', doubleCurlyL.span));
+      errors
+          .add(TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in interpolation.', doubleCurlyL!.span));
       return null;
     }
 
@@ -159,7 +160,7 @@ class Parser {
     return Interpolation(doubleCurlyL, expression, _current);
   }
 
-  Element parseElement() {
+  Element? parseElement() {
     if (!next(TokenType.lt)) return null;
     var lt = _current;
 
@@ -172,11 +173,11 @@ class Parser {
     var tagName = parseIdentifier();
 
     if (tagName == null) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing tag name.', lt.span));
+      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing tag name.', lt!.span));
       return null;
     }
 
-    List<Attribute> attributes = [];
+    var attributes = <Attribute>[];
     var attribute = parseAttribute();
 
     while (attribute != null) {
@@ -190,7 +191,7 @@ class Parser {
 
       if (!next(TokenType.gt)) {
         errors.add(TwigDartError(
-            TwigDartErrorSeverity.error, 'Missing ">" in self-closing "${tagName.name}" tag.', slash.span));
+            TwigDartErrorSeverity.error, 'Missing ">" in self-closing "${tagName.name}" tag.', slash!.span));
         return null;
       }
 
@@ -210,7 +211,7 @@ class Parser {
       return SelfClosingElement(lt, tagName, attributes, null, gt);
     }
 
-    List<ElementChild> children = [];
+    var children = <ElementChild>[];
     var child = parseElementChild();
 
     while (child != null) {
@@ -229,7 +230,8 @@ class Parser {
     var lt2 = _current;
 
     if (!next(TokenType.slash)) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing "/" in "${tagName.name}" closing tag.', lt2.span));
+      errors
+          .add(TwigDartError(TwigDartErrorSeverity.error, 'Missing "/" in "${tagName.name}" closing tag.', lt2!.span));
       return null;
     }
 
@@ -237,13 +239,13 @@ class Parser {
 
     if (tagName2 == null) {
       errors.add(TwigDartError(
-          TwigDartErrorSeverity.error, 'Missing "${tagName.name}" in "${tagName.name}" closing tag.', slash.span));
+          TwigDartErrorSeverity.error, 'Missing "${tagName.name}" in "${tagName.name}" closing tag.', slash!.span));
       return null;
     }
 
     if (tagName2.name != tagName.name) {
       errors.add(TwigDartError(TwigDartErrorSeverity.error,
-          'Mismatched closing tags. Expected "${tagName.span.text}"; got "${tagName2.name}" instead.', lt2.span));
+          'Mismatched closing tags. Expected "${tagName.span!.text}"; got "${tagName2.name}" instead.', lt2!.span));
       return null;
     }
 
@@ -256,19 +258,19 @@ class Parser {
     return RegularElement(lt, tagName, attributes, gt, children, lt2, slash, tagName2, _current);
   }
 
-  Attribute parseAttribute() {
-    Identifier id;
-    StringLiteral string;
+  Attribute? parseAttribute() {
+    Identifier? id;
+    StringLiteral? string;
 
     if ((id = parseIdentifier()) != null) {
       // Nothing
     } else if (next(TokenType.string)) {
-      string = StringLiteral(_current, StringLiteral.parseValue(_current));
+      string = StringLiteral(_current, StringLiteral.parseValue(_current!));
     } else {
       return null;
     }
 
-    Token equals, nequ;
+    Token? equals, nequ;
 
     if (next(TokenType.equals)) {
       equals = _current;
@@ -283,7 +285,7 @@ class Parser {
 
       if (value == null) {
         errors.add(
-            TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in attribute.', equals?.span ?? nequ.span));
+            TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in attribute.', equals?.span ?? nequ!.span));
         return null;
       }
 
@@ -303,22 +305,22 @@ class Parser {
       }
 
       errors.add(
-          TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in attribute.', equals?.span ?? nequ.span));
+          TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in attribute.', equals?.span ?? nequ!.span));
       return null;
     }
   }
 
-  Expression parseExpression(int precedence) {
+  Expression? parseExpression(int precedence) {
     // Only consume a token if it could potentially be a prefix parselet
 
     for (var type in prefixParselets.keys) {
       if (next(type)) {
-        var left = prefixParselets[type].parse(this, _current);
+        var left = prefixParselets[type]!.parse(this, _current);
 
         while (precedence < _nextPrecedence()) {
           _current = scanner.tokens[++_index];
 
-          if (_current.type == TokenType.slash && peek()?.type == TokenType.gt) {
+          if (_current!.type == TokenType.slash && peek()?.type == TokenType.gt) {
             // Handle `/>`
             //
             // Don't register this as an infix expression.
@@ -327,11 +329,11 @@ class Parser {
             return left;
           }
 
-          var infix = infixParselets[_current.type];
+          var infix = infixParselets[_current!.type]!;
           var newLeft = infix.parse(this, left, _current);
 
           if (newLeft == null) {
-            if (_current.type == TokenType.gt) _index--;
+            if (_current!.type == TokenType.gt) _index--;
             return left;
           }
           left = newLeft;
@@ -345,25 +347,25 @@ class Parser {
     return null;
   }
 
-  Identifier parseIdentifier() => next(TokenType.id) ? Identifier(_current) : null;
+  Identifier? parseIdentifier() => next(TokenType.id) ? Identifier(_current) : null;
 
-  KeyValuePair parseKeyValuePair() {
+  KeyValuePair? parseKeyValuePair() {
     var key = parseExpression(0);
     if (key == null) return null;
 
     if (!next(TokenType.colon)) return KeyValuePair(key, null, null);
 
-    var colon = _current, value = parseExpression(0);
+    var colon = _current, value = parseExpression(0) as Token?;
 
     if (value == null) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in key-value pair.', colon.span));
+      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in key-value pair.', colon!.span));
       return null;
     }
 
-    return KeyValuePair(key, colon, value);
+    return KeyValuePair(key, colon, value as Expression?);
   }
 
-  NamedArgument parseNamedArgument() {
+  NamedArgument? parseNamedArgument() {
     var name = parseIdentifier();
     if (name == null) return null;
 
@@ -372,13 +374,13 @@ class Parser {
       return null;
     }
 
-    var colon = _current, value = parseExpression(0);
+    var colon = _current, value = parseExpression(0) as Token?;
 
     if (value == null) {
-      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in named argument.', colon.span));
+      errors.add(TwigDartError(TwigDartErrorSeverity.error, 'Missing expression in named argument.', colon!.span));
       return null;
     }
 
-    return NamedArgument(name, colon, value);
+    return NamedArgument(name, colon, value as Expression);
   }
 }

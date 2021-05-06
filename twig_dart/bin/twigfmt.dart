@@ -29,7 +29,7 @@ main(List<String> args) async {
 
     if (argResults.rest.isEmpty) {
       var text = await stdin.transform(utf8.decoder).join();
-      var result = await format(argResults['stdin-name'] as String, text, argResults);
+      var result = format(argResults['stdin-name'] as String?, text, argResults);
       if (result != null) print(result);
     } else {
       for (var arg in argResults.rest) {
@@ -45,7 +45,7 @@ main(List<String> args) async {
 
 void printUsage(IOSink sink) {
   sink
-    ..writeln('Usage: jaelfmt [options...] [files or directories...]')
+    ..writeln('Usage: twigfmt [options...] [files or directories...]')
     ..writeln()
     ..writeln('Options:')
     ..writeln(argParser.usage);
@@ -64,7 +64,7 @@ Future<void> formatStat(FileStat stat, String path, ArgResults argResults) async
       }
       break;
     case FileSystemEntityType.file:
-      if (path.endsWith('.jael')) await formatFile(File(path), argResults);
+      if (path.endsWith('.twig')) await formatFile(File(path), argResults);
       break;
     case FileSystemEntityType.link:
       var link = await Link(path).resolveSymbolicLinks();
@@ -78,14 +78,14 @@ Future<void> formatStat(FileStat stat, String path, ArgResults argResults) async
 
 Future<void> formatFile(File file, ArgResults argResults) async {
   var content = await file.readAsString();
-  var formatted = await format(file.path, content, argResults);
+  var formatted = format(file.path, content, argResults);
   if (formatted == null) return;
   if (argResults['overwrite'] as bool) {
     if (formatted != content) {
       if (argResults['dry-run'] as bool) {
         print('Would have formatted ${file.path}');
       } else {
-        await file.writeAsStringSync(formatted);
+        file.writeAsStringSync(formatted);
         print('Formatted ${file.path}');
       }
     } else {
@@ -96,14 +96,14 @@ Future<void> formatFile(File file, ArgResults argResults) async {
   }
 }
 
-String format(String filename, String content, ArgResults argResults) {
+String? format(String? filename, String content, ArgResults argResults) {
   var errored = false;
   var doc = parseDocument(content, sourceUrl: filename, onError: (e) {
     stderr.writeln(e);
     errored = true;
   });
   if (errored) return null;
-  var fmt = TwigDartFormatter(int.parse(argResults['tab-size'] as String), argResults['insert-spaces'] as bool,
+  var fmt = TwigDartFormatter(int.parse(argResults['tab-size'] as String), argResults['insert-spaces'] as bool?,
       int.parse(argResults['line-length'] as String));
   return fmt.apply(doc);
 }

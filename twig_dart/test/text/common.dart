@@ -1,11 +1,11 @@
 import 'package:matcher/matcher.dart';
 import 'package:twig_dart/src/ast/token.dart';
 
-Matcher isToken(TokenType type, [String text]) => _IsToken(type, text);
+Matcher isToken(TokenType type, [String? text]) => _IsToken(type, text);
 
 class _IsToken extends Matcher {
   final TokenType type;
-  final String text;
+  final String? text;
 
   _IsToken(this.type, [this.text]);
 
@@ -17,6 +17,6 @@ class _IsToken extends Matcher {
 
   @override
   bool matches(item, Map matchState) {
-    return item is Token && item.type == type && (text == null || item.span.text == text);
+    return item is Token && item.type == type && (text == null || item.span!.text == text);
   }
 }

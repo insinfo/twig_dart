@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'package:file/file.dart';
 import 'package:twig_dart/twig_dart.dart';
 
-/// Modifies a Jael document.
-typedef FutureOr<Document> Patcher(Document document, Directory currentDirectory, void onError(TwigDartError error));
+/// Modifies a twig document.
+typedef FutureOr<Document>? Patcher(Document? document, Directory currentDirectory, void onError(TwigDartError error)?);
 
 /// Expands all `block[name]` tags within the template, replacing them with the correct content.
 ///
 /// To apply additional patches to resolved documents, provide a set of [patch]
 /// functions.
-Future<Document> resolve(Document document, Directory currentDirectory,
-    {void onError(error), Iterable<Patcher> patch}) async {
-  onError ?? (e) => throw e;
+Future<Document?> resolve(Document document, Directory currentDirectory,
+    {void onError(error)?, Iterable<Patcher>? patch}) async {
+  onError ?? (e) => throw (e is Exception ? e : e as Error);
+  // onError ?? (e) => throw e;
 
   // Resolve all includes...
   var includesResolved = await resolveIncludes(document, currentDirectory, onError);
@@ -22,7 +24,7 @@ Future<Document> resolve(Document document, Directory currentDirectory,
 
   if (patch?.isNotEmpty != true) return patched;
 
-  for (var p in patch) {
+  for (var p in patch!) {
     patched = await p(patched, currentDirectory, onError);
   }
 
@@ -30,8 +32,8 @@ Future<Document> resolve(Document document, Directory currentDirectory,
 }
 
 /// Folds any `extend` declarations.
-Future<Document> applyInheritance(
-    Document document, Directory currentDirectory, void onError(error), Iterable<Patcher> patch) async {
+Future<Document?> applyInheritance(
+    Document document, Directory currentDirectory, void onError(error)?, Iterable<Patcher>? patch) async {
   if (document.root.tagName.name != 'extend') {
     // This is not an inherited template, so just fill in the existing blocks.
     var root = replaceChildrenOfElement(document.root, {}, onError, true, false);
@@ -39,13 +41,13 @@ Future<Document> applyInheritance(
   }
 
   var element = document.root;
-  var attr = element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
+  var attr = element.attributes.firstWhereOrNull((a) => a.name == 'src');
   if (attr == null) {
-    onError(new TwigDartError(
+    onError!(new TwigDartError(
         TwigDartErrorSeverity.warning, 'Missing "src" attribute in "extend" tag.', element.tagName.span));
     return null;
   } else if (attr.value is! StringLiteral) {
-    onError(new TwigDartError(TwigDartErrorSeverity.warning,
+    onError!(new TwigDartError(TwigDartErrorSeverity.warning,
         'The "src" attribute in an "extend" tag must be a string literal.', element.tagName.span));
     return null;
   } else {
@@ -63,10 +65,10 @@ Future<Document> applyInheritance(
     var out = hierarchy?.root;
 
     if (out is! RegularElement) {
-      return hierarchy.rootDocument;
+      return hierarchy!.rootDocument;
     }
 
-    Element setOut(Element out, Map<String, RegularElement> definedOverrides, bool anyTemplatesRemain) {
+    Element setOut(Element out, Map<String?, RegularElement> definedOverrides, bool anyTemplatesRemain) {
       var children = <ElementChild>[];
 
       // Replace matching blocks, etc.
@@ -78,21 +80,21 @@ Future<Document> applyInheritance(
         }
       }
 
-      var root = hierarchy.root as RegularElement;
+      var root = hierarchy!.root as RegularElement;
       return new RegularElement(
           root.lt, root.tagName, root.attributes, root.gt, children, root.lt2, root.slash, root.tagName2, root.gt2);
     }
 
     // Loop through all extends, filling in blocks.
-    while (hierarchy.extendsTemplates.isNotEmpty) {
+    while (hierarchy!.extendsTemplates.isNotEmpty) {
       var tmpl = hierarchy.extendsTemplates.removeFirst();
       var definedOverrides = findBlockOverrides(tmpl, onError);
       if (definedOverrides == null) break;
-      out = setOut(out, definedOverrides, hierarchy.extendsTemplates.isNotEmpty);
+      out = setOut(out!, definedOverrides, hierarchy.extendsTemplates.isNotEmpty);
     }
 
     // Lastly, just default-fill any remaining blocks.
-    var definedOverrides = findBlockOverrides(out, onError);
+    var definedOverrides = findBlockOverrides(out!, onError);
     if (definedOverrides != null) out = setOut(out, definedOverrides, false);
 
     // Return our processed document.
@@ -100,16 +102,14 @@ Future<Document> applyInheritance(
   }
 }
 
-Map<String, RegularElement> findBlockOverrides(Element tmpl, void onError(TwigDartError e)) {
-  var out = <String, RegularElement>{};
+Map<String?, RegularElement> findBlockOverrides(Element tmpl, void onError(TwigDartError e)?) {
+  var out = <String?, RegularElement>{};
 
   for (var child in tmpl.children) {
-    if (child is RegularElement && child.tagName?.name == 'block') {
-      var name = child.attributes
-          .firstWhere((a) => a.name == 'name', orElse: () => null)
-          ?.value
-          ?.compute(new SymbolTable()) as String;
-      if (name?.trim()?.isNotEmpty == true) {
+    if (child is RegularElement && child.tagName.name == 'block') {
+      var name =
+          child.attributes.firstWhereOrNull((a) => a.name == 'name')?.value?.compute(new SymbolTable()) as String?;
+      if (name?.trim().isNotEmpty == true) {
         out[name] = child;
       }
     }
@@ -119,18 +119,18 @@ Map<String, RegularElement> findBlockOverrides(Element tmpl, void onError(TwigDa
 }
 
 /// Resolves the document hierarchy at a given node in the tree.
-Future<DocumentHierarchy> resolveHierarchy(Document document, Directory currentDirectory, void onError(e)) async {
+Future<DocumentHierarchy?> resolveHierarchy(Document document, Directory currentDirectory, void onError(e)?) async {
   var extendsTemplates = new Queue<Element>();
-  String parent;
+  String? parent;
 
   while (document != null && (parent = getParent(document, onError)) != null) {
     try {
       extendsTemplates.addFirst(document.root);
-      var file = currentDirectory.childFile(parent);
-      var parsed = parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: onError);
+      var file = currentDirectory.childFile(parent!);
+      var parsed = parseDocument(await file.readAsString(), sourceUrl: file.uri, onError: onError)!;
       document = await resolveIncludes(parsed, currentDirectory, onError);
     } on FileSystemException catch (e) {
-      onError(new TwigDartError(TwigDartErrorSeverity.error, e.message, document.root.span));
+      onError!(new TwigDartError(TwigDartErrorSeverity.error, e.message, document.root.span));
       return null;
     }
   }
@@ -148,14 +148,14 @@ class DocumentHierarchy {
   Element get root => rootDocument.root;
 }
 
-Iterable<ElementChild> replaceBlocks(Element element, Map<String, RegularElement> definedOverrides, void onError(e),
+Iterable<ElementChild> replaceBlocks(Element element, Map<String?, RegularElement> definedOverrides, void onError(e)?,
     bool replaceWithDefault, bool anyTemplatesRemain) {
   if (element.tagName.name == 'block') {
-    var nameAttr = element.attributes.firstWhere((a) => a.name == 'name', orElse: () => null);
+    var nameAttr = element.attributes.firstWhereOrNull((a) => a.name == 'name');
     var name = nameAttr?.value?.compute(new SymbolTable());
 
     if (name?.trim()?.isNotEmpty != true) {
-      onError(new TwigDartError(TwigDartErrorSeverity.warning,
+      onError!(new TwigDartError(TwigDartErrorSeverity.warning,
           'This <block> has no `name` attribute, and will be outputted as-is.', element.span));
       return [element];
     } else if (!definedOverrides.containsKey(name)) {
@@ -181,7 +181,7 @@ Iterable<ElementChild> replaceBlocks(Element element, Map<String, RegularElement
       }
     } else {
       return allChildrenOfRegularElement(
-          definedOverrides[name], definedOverrides, onError, replaceWithDefault, anyTemplatesRemain);
+          definedOverrides[name]!, definedOverrides, onError, replaceWithDefault, anyTemplatesRemain);
     }
   } else if (element is SelfClosingElement) {
     return [element];
@@ -193,7 +193,7 @@ Iterable<ElementChild> replaceBlocks(Element element, Map<String, RegularElement
   }
 }
 
-Element replaceChildrenOfElement(Element el, Map<String, RegularElement> definedOverrides, void onError(e),
+Element replaceChildrenOfElement(Element el, Map<String, RegularElement> definedOverrides, void onError(e)?,
     bool replaceWithDefault, bool anyTemplatesRemain) {
   if (el is RegularElement) {
     return replaceChildrenOfRegularElement(el, definedOverrides, onError, replaceWithDefault, anyTemplatesRemain);
@@ -202,14 +202,14 @@ Element replaceChildrenOfElement(Element el, Map<String, RegularElement> defined
   }
 }
 
-RegularElement replaceChildrenOfRegularElement(RegularElement el, Map<String, RegularElement> definedOverrides,
-    void onError(e), bool replaceWithDefault, bool anyTemplatesRemain) {
+RegularElement replaceChildrenOfRegularElement(RegularElement el, Map<String?, RegularElement> definedOverrides,
+    void onError(e)?, bool replaceWithDefault, bool anyTemplatesRemain) {
   var children = allChildrenOfRegularElement(el, definedOverrides, onError, replaceWithDefault, anyTemplatesRemain);
   return new RegularElement(el.lt, el.tagName, el.attributes, el.gt, children, el.lt2, el.slash, el.tagName2, el.gt2);
 }
 
-List<ElementChild> allChildrenOfRegularElement(RegularElement el, Map<String, RegularElement> definedOverrides,
-    void onError(e), bool replaceWithDefault, bool anyTemplatesRemain) {
+List<ElementChild> allChildrenOfRegularElement(RegularElement el, Map<String?, RegularElement> definedOverrides,
+    void onError(e)?, bool replaceWithDefault, bool anyTemplatesRemain) {
   var children = <ElementChild>[];
 
   for (var c in el.children) {
@@ -224,17 +224,17 @@ List<ElementChild> allChildrenOfRegularElement(RegularElement el, Map<String, Re
 }
 
 /// Finds the name of the parent template.
-String getParent(Document document, void onError(error)) {
+String? getParent(Document document, void onError(error)?) {
   var element = document.root;
-  if (element?.tagName?.name != 'extend') return null;
+  if (element.tagName.name != 'extend') return null;
 
-  var attr = element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
+  var attr = element.attributes.firstWhereOrNull((a) => a.name == 'src');
   if (attr == null) {
-    onError(new TwigDartError(
+    onError!(new TwigDartError(
         TwigDartErrorSeverity.warning, 'Missing "src" attribute in "extend" tag.', element.tagName.span));
     return null;
   } else if (attr.value is! StringLiteral) {
-    onError(new TwigDartError(TwigDartErrorSeverity.warning,
+    onError!(new TwigDartError(TwigDartErrorSeverity.warning,
         'The "src" attribute in an "extend" tag must be a string literal.', element.tagName.span));
     return null;
   } else {
@@ -243,16 +243,17 @@ String getParent(Document document, void onError(error)) {
 }
 
 /// Expands all `include[src]` tags within the template, and fills in the content of referenced files.
-Future<Document> resolveIncludes(Document document, Directory currentDirectory, void onError(error)) async {
-  return new Document(document.doctype, await _expandIncludes(document.root, currentDirectory, onError));
+Future<Document> resolveIncludes(Document document, Directory currentDirectory, void onError(error)?) async {
+  var el = await _expandIncludes(document.root, currentDirectory, onError);
+  return new Document(document.doctype, el!);
 }
 
-Future<Element> _expandIncludes(Element element, Directory currentDirectory, void onError(error)) async {
+Future<Element?> _expandIncludes(Element element, Directory currentDirectory, void onError(error)?) async {
   if (element.tagName.name != 'include') {
     if (element is SelfClosingElement)
       return element;
     else if (element is RegularElement) {
-      List<ElementChild> expanded = [];
+      List<ElementChild?> expanded = [];
 
       for (var child in element.children) {
         if (child is Element) {
@@ -262,28 +263,28 @@ Future<Element> _expandIncludes(Element element, Directory currentDirectory, voi
         }
       }
 
-      return new RegularElement(element.lt, element.tagName, element.attributes, element.gt, expanded, element.lt2,
-          element.slash, element.tagName2, element.gt2);
+      return new RegularElement(element.lt, element.tagName, element.attributes, element.gt,
+          Iterable.castFrom(expanded), element.lt2, element.slash, element.tagName2, element.gt2);
     } else {
       throw new UnsupportedError('Unsupported element type: ${element.runtimeType}');
     }
   }
 
-  var attr = element.attributes.firstWhere((a) => a.name == 'src', orElse: () => null);
+  var attr = element.attributes.firstWhereOrNull((a) => a.name == 'src');
   if (attr == null) {
-    onError(new TwigDartError(
+    onError!(new TwigDartError(
         TwigDartErrorSeverity.warning, 'Missing "src" attribute in "include" tag.', element.tagName.span));
     return null;
   } else if (attr.value is! StringLiteral) {
-    onError(new TwigDartError(TwigDartErrorSeverity.warning,
+    onError!(new TwigDartError(TwigDartErrorSeverity.warning,
         'The "src" attribute in an "include" tag must be a string literal.', element.tagName.span));
     return null;
   } else {
     var src = (attr.value as StringLiteral).value;
     var file = currentDirectory.fileSystem.file(currentDirectory.uri.resolve(src));
     var contents = await file.readAsString();
-    var doc = parseDocument(contents, sourceUrl: file.uri, onError: onError);
+    var doc = parseDocument(contents, sourceUrl: file.uri, onError: onError)!;
     var processed = await resolve(doc, currentDirectory.fileSystem.directory(file.dirname), onError: onError);
-    return processed.root;
+    return processed!.root;
   }
 }

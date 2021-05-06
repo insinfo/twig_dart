@@ -1,17 +1,17 @@
 name: twig_dart_preprocessor
-version: 2.0.1
-description: A pre-processor for resolving blocks and includes within Jael templates.
+version: 3.0.1
+description: A pre-processor for resolving blocks and includes within Twig templates.
 author: Isaque Neves <insinfo2008@gmail.com>
 homepage: https://github.com/insinfo/twig_dart
 
 environment:
-  sdk: ">=2.0.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  #file: ^5.0.0
   file: ^6.1.0 #Null safety
-  twig_dart: ^2.0.2
+  twig_dart: ^3.0.0 #Null safety
   essential_symbol_table: ^2.0.1 #Null safety
+  collection: ^1.15.0 #Null safety
   
 dev_dependencies:
   essential_code_buffer: ^2.0.1 #Null safety

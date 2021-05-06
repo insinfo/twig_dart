@@ -1,6 +1,6 @@
-import 'package:angel_framework/angel_framework.dart';
-import 'package:angel_twig_dart/angel_twig_dart.dart';
-import 'package:angel_test/angel_test.dart';
+import 'package:galileo_framework/galileo_framework.dart';
+import 'package:galileo_twig_dart/galileo_twig_dart.dart';
+import 'package:galileo_test/galileo_test.dart';
 import 'package:file/memory.dart';
 import 'package:html/parser.dart' as html;
 import 'package:logging/logging.dart';
@@ -14,13 +14,13 @@ main() {
   TestClient client;
 
   setUp(() async {
-    var app = new Angel();
+    var app = new Galileo();
     app.configuration['properties'] = app.configuration;
 
     var fileSystem = new MemoryFileSystem();
     var viewsDirectory = fileSystem.directory('views')..createSync();
 
-    viewsDirectory.childFile('layout.jael').writeAsStringSync('''
+    viewsDirectory.childFile('layout.twig').writeAsStringSync('''
 <!DOCTYPE html>
 <html>
   <head>
@@ -34,8 +34,8 @@ main() {
 </html>
     ''');
 
-    viewsDirectory.childFile('github.jael').writeAsStringSync('''
-<extend src="layout.jael">
+    viewsDirectory.childFile('github.twig').writeAsStringSync('''
+<extend src="layout.twig">
   <block name="content">{{username}}</block>
 </extend>
     ''');
@@ -49,9 +49,9 @@ main() {
       twig(viewsDirectory),
     );
 
-    app.fallback((req, res) => throw new AngelHttpException.notFound());
+    app.fallback((req, res) => throw new GalileoHttpException.notFound());
 
-    app.logger = new Logger('angel')
+    app.logger = new Logger('galileo')
       ..onRecord.listen((rec) {
         print(rec);
         if (rec.error != null) print(rec.error);
@@ -62,7 +62,7 @@ main() {
   });
 
   test('can render', () async {
-    var response = await client.get('/github/thosakwe');
+    var response = await client.get(Uri.parse('/github/thosakwe'));
     print('Body:\n${response.body}');
     expect(
         html.parse(response.body).outerHtml,

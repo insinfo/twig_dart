@@ -13,7 +13,7 @@ void main(List<String> args) {
 ''';
 
   var buf = CodeBuffer();
-  var document = twig_dart.parseDocument(template, sourceUrl: 'test.twig', asDSX: false);
+  var document = twig_dart.parseDocument(template, sourceUrl: 'test.twig', asDSX: false)!;
 
   /*
    var file = viewsDirectory.childFile(name + fileExtension);
