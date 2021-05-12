@@ -2,13 +2,13 @@ import 'package:twig_dart_web/twig_dart_web.dart';
 import 'package:twig_dart_web/elements.dart';
 part 'main.g.dart';
 
-@Jael(template: '''
+@Twig(template: '''
 <div>
-  <h1>Hello, Jael!</h1>
+  <h1>Hello, twig!</h1>
   <i>Current time: {{now}}</i>
 </div>
 ''')
-class Hello extends Component with _HelloJaelTemplate {
+class Hello extends Component with _HelloTwigTemplate {
   DateTime get now => DateTime.now();
 }
 
@@ -20,7 +20,7 @@ class Hello2 extends Component {
   DomNode render() {
     return div(c: [
       h1(c: [
-        text('Hello, Jael!'),
+        text('Hello, twig!'),
       ]),
       i(c: [
         text('Current time: $now'),

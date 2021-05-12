@@ -1,31 +1,29 @@
-import 'package:jael/jael.dart';
+import 'package:twig_dart/twig_dart.dart';
 import 'package:logging/logging.dart';
-import 'package:symbol_table/symbol_table.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'object.dart';
 
 class Analyzer extends Parser {
   final Logger logger;
   Analyzer(Scanner scanner, this.logger) : super(scanner);
 
-  final errors = <JaelError>[];
-  var _scope = new SymbolTable<JaelObject>();
-  var allDefinitions = <Variable<JaelObject>>[];
+  final errors = <TwigDartError>[];
+  var _scope = new SymbolTable<twigObject>();
+  var allDefinitions = <Variable<twigObject>>[];
 
-  SymbolTable<JaelObject> get parentScope =>
-      _scope.isRoot ? _scope : _scope.parent;
+  SymbolTable<twigObject> get parentScope => _scope.isRoot ? _scope : _scope.parent;
 
-  SymbolTable<JaelObject> get scope => _scope;
+  SymbolTable<twigObject> get scope => _scope;
 
   bool ensureAttributeIsPresent(Element element, String name) {
     if (element.getAttribute(name)?.value == null) {
-      addError(new JaelError(JaelErrorSeverity.error,
-          'Missing required attribute `$name`.', element.span));
+      addError(new TwigDartError(TwigDartErrorSeverity.error, 'Missing required attribute `$name`.', element.span));
       return false;
     }
     return true;
   }
 
-  void addError(JaelError e) {
+  void addError(TwigDartError e) {
     errors.add(e);
     logger.severe(e.message, e.span.highlight());
   }
@@ -33,9 +31,7 @@ class Analyzer extends Parser {
   bool ensureAttributeIsConstantString(Element element, String name) {
     var a = element.getAttribute(name);
     if (a?.value is! StringLiteral || a?.value == null) {
-      var e = new JaelError(
-          JaelErrorSeverity.warning,
-          "`$name` attribute should be a constant string literal.",
+      var e = new TwigDartError(TwigDartErrorSeverity.warning, "`$name` attribute should be a constant string literal.",
           a?.span ?? element.tagName.span);
       addError(e);
       return false;
@@ -52,11 +48,7 @@ class Analyzer extends Parser {
       if (element == null) return null;
 
       // Check if any custom element exists.
-      _scope
-          .resolve(element.tagName.name)
-          ?.value
-          ?.usages
-          ?.add(new SymbolUsage(SymbolUsageType.read, element.span));
+      _scope.resolve(element.tagName.name)?.value?.usages?.add(new SymbolUsage(SymbolUsageType.read, element.span));
 
       // Validate attrs
       var forEach = element.getAttribute('for-each');
@@ -65,22 +57,20 @@ class Analyzer extends Parser {
         if (asAttr != null) {
           if (ensureAttributeIsConstantString(element, 'as')) {
             var asName = asAttr.string.value;
-            _scope.create(asName,
-                value: new JaelVariable(asName, asAttr.span), constant: true);
+            _scope.create(asName, value: new twigVariable(asName, asAttr.span), constant: true);
           }
         }
 
         if (forEach.value != null) {
-          addError(new JaelError(JaelErrorSeverity.error,
-              'Missing value for `for-each` directive.', forEach.span));
+          addError(
+              new TwigDartError(TwigDartErrorSeverity.error, 'Missing value for `for-each` directive.', forEach.span));
         }
       }
 
       var iff = element.getAttribute('if');
       if (iff != null) {
         if (iff.value != null) {
-          addError(new JaelError(JaelErrorSeverity.error,
-              'Missing value for `iff` directive.', iff.span));
+          addError(new TwigDartError(TwigDartErrorSeverity.error, 'Missing value for `iff` directive.', iff.span));
         }
       }
 
@@ -94,14 +84,11 @@ class Analyzer extends Parser {
           //logger.info('Found <case> at ${element.span.start.toolString}');
         } else if (element.tagName.name == 'declare') {
           if (element.attributes.isEmpty) {
-            addError(new JaelError(
-                JaelErrorSeverity.warning,
-                '`declare` directive does not define any new symbols.',
-                element.tagName.span));
+            addError(new TwigDartError(TwigDartErrorSeverity.warning,
+                '`declare` directive does not define any new symbols.', element.tagName.span));
           } else {
             for (var attr in element.attributes) {
-              _scope.create(attr.name,
-                  value: new JaelVariable(attr.name, attr.span));
+              _scope.create(attr.name, value: new twigVariable(attr.name, attr.span));
             }
           }
         } else if (element.tagName.name == 'element') {
@@ -111,13 +98,11 @@ class Analyzer extends Parser {
             //logger.info(
             //    'Found custom element $name at ${element.span.start.toolString}');
             try {
-              var symbol = parentScope.create(name,
-                  value: new JaelCustomElement(name, element.tagName.span),
-                  constant: true);
+              var symbol =
+                  parentScope.create(name, value: new twigCustomElement(name, element.tagName.span), constant: true);
               allDefinitions.add(symbol);
             } on StateError catch (e) {
-              addError(new JaelError(
-                  JaelErrorSeverity.error, e.message, element.tagName.span));
+              addError(new TwigDartError(TwigDartErrorSeverity.error, e.message, element.tagName.span));
             }
           }
         } else if (element.tagName.name == 'extend') {

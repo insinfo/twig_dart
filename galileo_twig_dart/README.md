@@ -1,5 +1,5 @@
-# twig_dart 
-[![Pub](https://img.shields.io/pub/v/galileo_twig.svg)](https://pub.dartlang.org/packages/galileo_twig)
+# galileo_twig_dart 
+[![Pub](https://img.shields.io/pub/v/galileo_twig.svg)](https://pub.dartlang.org/packages/galileo_twig_dart)
 [![build status](https://travis-ci.org/galileo-dart/twig.svg)](https://travis-ci.org/galileo-dart/twig)
 
 
@@ -12,7 +12,7 @@ In your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  galileo_twig: ^3.0.0
+  galileo_twig_dart : ^3.0.2
 ```
 
 # Usage

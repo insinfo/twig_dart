@@ -2,8 +2,9 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:code_builder/code_builder.dart';
-import 'package:jael/jael.dart' as jael;
-import 'package:jael_preprocessor/jael_preprocessor.dart' as jael;
+import 'package:twig_dart/twig_dart.dart' as twig;
+
+import 'package:twig_dart_preprocessor/twig_dart_preprocessor.dart' as twig;
 import 'package:twig_dart_web/twig_dart_web.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
@@ -11,18 +12,18 @@ import 'util.dart';
 
 var _upper = RegExp(r'^[A-Z]');
 
-Builder jaelComponentBuilder(_) {
-  return SharedPartBuilder([JaelComponentGenerator()], 'jael_web_cmp');
+Builder twigComponentBuilder(_) {
+  return SharedPartBuilder([twigComponentGenerator()], 'twig_web_cmp');
 }
 
-class JaelComponentGenerator extends GeneratorForAnnotation<Jael> {
+class twigComponentGenerator extends GeneratorForAnnotation<Twig> {
   @override
   Future<String> generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) async {
     if (element is ClassElement) {
       // Load the template
       String templateString;
       var inputId = buildStep.inputId;
-      var ann = Jael(
+      var ann = Twig(
         template: annotation.peek('template')?.stringValue,
         templateUrl: annotation.peek('templateUrl')?.stringValue,
         asDsx: annotation.peek('asDsx')?.boolValue ?? false,
@@ -45,22 +46,23 @@ class JaelComponentGenerator extends GeneratorForAnnotation<Jael> {
       }
 
       var fs = BuildFileSystem(buildStep, inputId.package);
-      var errors = <jael.JaelError>[];
-      var doc = await jael.parseDocument(templateString, sourceUrl: inputId.uri, asDSX: ann.asDsx, onError: errors.add);
+      var errors = <twig.TwigDartError>[];
+      var doc = await twig.parseDocument(templateString, sourceUrl: inputId.uri, asDSX: ann.asDsx, onError: errors.add);
       if (errors.isEmpty) {
-        doc = await jael.resolve(doc, fs.file(inputId.uri).parent, onError: errors.add);
+        doc = await twig.resolve(doc, fs.file(inputId.uri).parent,
+            onError: (e) => errors.add(e as twig.TwigDartError)); //as Function(dynamic)
       }
 
       if (errors.isNotEmpty) {
         errors.forEach(log.severe);
-        throw 'Jael processing finished with ${errors.length} error(s).';
+        throw 'twig processing finished with ${errors.length} error(s).';
       }
 
-      // Generate a _XJaelTemplate mixin class
+      // Generate a _XtwigTemplate mixin class
       var clazz = Class((b) {
         b
           ..abstract = true
-          ..name = '_${element.name}JaelTemplate'
+          ..name = '_${element.name}twigTemplate'
           ..implements.add(convertTypeReference(element.supertype));
 
         // Add fields corresponding to each of the class's fields.
@@ -99,18 +101,18 @@ class JaelComponentGenerator extends GeneratorForAnnotation<Jael> {
 
       return clazz.accept(DartEmitter()).toString();
     } else {
-      throw '@Jael() is only supported for classes.';
+      throw '@twig() is only supported for classes.';
     }
   }
 
-  Expression compileElementChild(jael.ElementChild child) {
-    if (child is jael.TextNode || child is jael.Text) {
+  Expression compileElementChild(twig.ElementChild child) {
+    if (child is twig.TextNode || child is twig.Text) {
       return refer('text').call([literalString(child.span.text)]);
-    } else if (child is jael.Interpolation) {
+    } else if (child is twig.Interpolation) {
       Expression expr = CodeExpression(Code(child.expression.span.text));
       expr = expr.property('toString').call([]);
       return refer('text').call([expr]);
-    } else if (child is jael.Element) {
+    } else if (child is twig.Element) {
       // TODO: Handle strict resolution
       var attrs = <String, Expression>{};
       for (var attr in child.attributes) {

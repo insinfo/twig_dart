@@ -2,24 +2,24 @@ import 'dart:collection';
 
 import 'package:source_span/source_span.dart';
 
-abstract class JaelObject {
+abstract class twigObject {
   final FileSpan span;
   final usages = <SymbolUsage>[];
   String get name;
 
-  JaelObject(this.span);
+  twigObject(this.span);
 }
 
-class JaelCustomElement extends JaelObject {
+class twigCustomElement extends twigObject {
   final String name;
   final attributes = new SplayTreeSet<String>();
 
-  JaelCustomElement(this.name, FileSpan span) : super(span);
+  twigCustomElement(this.name, FileSpan span) : super(span);
 }
 
-class JaelVariable extends JaelObject {
+class twigVariable extends twigObject {
   final String name;
-  JaelVariable(this.name, FileSpan span) : super(span);
+  twigVariable(this.name, FileSpan span) : super(span);
 }
 
 class SymbolUsage {

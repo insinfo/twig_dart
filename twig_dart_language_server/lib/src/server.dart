@@ -1,26 +1,26 @@
 import 'dart:async';
-import 'package:dart_language_server/src/protocol/language_server/interface.dart';
-import 'package:dart_language_server/src/protocol/language_server/messages.dart';
+import 'package:galileo_dart_language_server/src/protocol/language_server/interface.dart';
+import 'package:galileo_dart_language_server/src/protocol/language_server/messages.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
-import 'package:jael/jael.dart';
+import 'package:twig_dart/twig_dart.dart';
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc_2;
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:string_scanner/string_scanner.dart';
-import 'package:symbol_table/symbol_table.dart';
+import 'package:essential_symbol_table/essential_symbol_table.dart';
 import 'analyzer.dart';
 import 'object.dart';
 
-class JaelLanguageServer extends LanguageServer {
+class TwigLanguageServer extends LanguageServer {
   var _diagnostics = new StreamController<Diagnostics>();
   var _done = new Completer();
   var _memFs = new MemoryFileSystem();
   var _localFs = const LocalFileSystem();
   Directory _localRootDir, _memRootDir;
-  var logger = new Logger('jael');
+  var logger = new Logger('twig');
   Uri _rootUri;
   var _workspaceEdits = new StreamController<ApplyWorkspaceEditParams>();
 
@@ -59,14 +59,14 @@ class JaelLanguageServer extends LanguageServer {
     await _memRootDir.create(recursive: true);
     _memFs.currentDirectory = _memRootDir;
 
-    // Copy all real files that end in *.jael (and *.jl for legacy) into the in-memory filesystem.
+    // Copy all real files that end in *.twig (and *.jl for legacy) into the in-memory filesystem.
     await for (var entity in _localRootDir.list(recursive: true)) {
-      if (entity is File && p.extension(entity.path) == '.jael') {
+      if (entity is File && p.extension(entity.path) == '.twig') {
         logger.info('HEY ${entity.path}');
         var file = _memFs.file(entity.absolute.path);
         await file.create(recursive: true);
         await entity.openRead().cast<List<int>>().pipe(file.openWrite(mode: FileMode.write));
-        logger.info('Found Jael file ${file.path}; copied to ${file.absolute.path}');
+        logger.info('Found twig file ${file.path}; copied to ${file.absolute.path}');
 
         // Analyze it
         var documentId = new TextDocumentIdentifier((b) {
@@ -129,7 +129,7 @@ class JaelLanguageServer extends LanguageServer {
     if (!await file.exists()) {
       await file.create(recursive: true);
       await _localFs.file(uri).openRead().cast<List<int>>().pipe(file.openWrite());
-      logger.info('Opened Jael file ${file.path}');
+      logger.info('Opened twig file ${file.path}');
     }
 
     return file;
@@ -148,7 +148,7 @@ class JaelLanguageServer extends LanguageServer {
     return analyzer;
   }
 
-  Diagnostic toDiagnostic(JaelError e) {
+  Diagnostic toDiagnostic(TwigDartError e) {
     return new Diagnostic((b) {
       b
         ..message = e.message
@@ -158,9 +158,9 @@ class JaelLanguageServer extends LanguageServer {
     });
   }
 
-  int toSeverity(JaelErrorSeverity s) {
+  int toSeverity(TwigDartErrorSeverity s) {
     switch (s) {
-      case JaelErrorSeverity.warning:
+      case TwigDartErrorSeverity.warning:
         return DiagnosticSeverity.warning;
       default:
         return DiagnosticSeverity.error;
@@ -200,14 +200,14 @@ class JaelLanguageServer extends LanguageServer {
     });
   }
 
-  bool isReachable(JaelObject obj, Position position) {
+  bool isReachable(twigObject obj, Position position) {
     return obj.span.start.line <= position.line && obj.span.start.column <= position.character;
   }
 
-  CompletionItem toCompletion(Variable<JaelObject> symbol) {
+  CompletionItem toCompletion(Variable<twigObject> symbol) {
     var value = symbol.value;
 
-    if (value is JaelCustomElement) {
+    if (value is twigCustomElement) {
       var name = value.name;
       return new CompletionItem((b) {
         b
@@ -219,7 +219,7 @@ class JaelLanguageServer extends LanguageServer {
               ..newText = '<$name\$1>\n    \$2\n</name>';
           });
       });
-    } else if (value is JaelVariable) {
+    } else if (value is twigVariable) {
       return new CompletionItem((b) {
         b
           ..kind = CompletionItemKind.variable
@@ -326,7 +326,7 @@ class JaelLanguageServer extends LanguageServer {
     }
   }
 
-  Future<JaelObject> currentSymbol(TextDocumentIdentifier documentId, Position position) async {
+  Future<twigObject> currentSymbol(TextDocumentIdentifier documentId, Position position) async {
     var name = await currentName(documentId, position);
     if (name == null) return null;
     var analyzer = await analyzerForId(documentId);
@@ -404,7 +404,7 @@ class JaelLanguageServer extends LanguageServer {
                 b
                   ..range = toRange(u.span)
                   ..newText =
-                      (symbol is JaelCustomElement && u.type == SymbolUsageType.definition) ? '"$newName"' : newName;
+                      (symbol is twigCustomElement && u.type == SymbolUsageType.definition) ? '"$newName"' : newName;
               });
             }).toList()
           };
@@ -435,7 +435,7 @@ class JaelLanguageServer extends LanguageServer {
 
   @override
   Future<List<SymbolInformation>> workspaceSymbol(String query) async {
-    var values = <JaelObject>[];
+    var values = <twigObject>[];
 
     await for (var file in _memRootDir.list(recursive: true)) {
       if (file is File) {
@@ -453,7 +453,7 @@ class JaelLanguageServer extends LanguageServer {
           ..name = o.name
           ..location = toLocation(o.span.sourceUrl.toString(), o.span)
           ..containerName = p.basename(o.span.sourceUrl.path)
-          ..kind = o is JaelCustomElement ? SymbolKind.classSymbol : SymbolKind.variable;
+          ..kind = o is twigCustomElement ? SymbolKind.classSymbol : SymbolKind.variable;
       });
     }).toList();
   }
@@ -461,12 +461,12 @@ class JaelLanguageServer extends LanguageServer {
   Future<List<TextEdit>> textDocumentFormatting(
       TextDocumentIdentifier documentId, FormattingOptions formattingOptions) async {
     try {
-      var errors = <JaelError>[];
+      var errors = <TwigDartError>[];
       var file = await fileForId(documentId);
       var contents = await file.readAsString();
       var document = parseDocument(contents, sourceUrl: file.uri, onError: errors.add);
       if (errors.isNotEmpty) return null;
-      var formatter = new JaelFormatter(formattingOptions.tabSize, formattingOptions.insertSpaces, 80);
+      var formatter = new TwigDartFormatter(formattingOptions.tabSize, formattingOptions.insertSpaces, 80);
       var formatted = formatter.apply(document);
       logger.info('Original:${contents}\nFormatted:\n$formatted');
       if (formatted.isNotEmpty) await file.writeAsString(formatted);
@@ -491,6 +491,10 @@ class JaelLanguageServer extends LanguageServer {
   @override
   // TODO: implement showMessages
   Stream<ShowMessageParams> get showMessages => null;
+
+  @override
+  // TODO: implement logMessages
+  Stream<ShowMessageParams> get logMessages => throw UnimplementedError();
 }
 
 abstract class DiagnosticSeverity {

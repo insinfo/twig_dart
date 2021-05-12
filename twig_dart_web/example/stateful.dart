@@ -14,8 +14,8 @@ class _AppState {
   }
 }
 
-@Jael(template: '<div>Tick count: {{state.ticks}}</div>')
-class StatefulApp extends Component<_AppState> with _StatefulAppJaelTemplate {
+@Twig(template: '<div>Tick count: {{state.ticks}}</div>')
+class StatefulApp extends Component<_AppState> with _StatefulAppTwigTemplate {
   Timer _timer;
 
   StatefulApp() {

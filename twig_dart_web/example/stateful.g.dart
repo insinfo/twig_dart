@@ -6,7 +6,7 @@ part of 'stateful.dart';
 // JaelComponentGenerator
 // **************************************************************************
 
-abstract class _StatefulAppJaelTemplate implements Component<_AppState> {
+abstract class _StatefulAppTwigTemplate implements Component<_AppState> {
   Timer get _timer;
   void beforeDestroy();
   @override

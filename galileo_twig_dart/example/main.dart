@@ -14,7 +14,7 @@ main() async {
     twig(fileSystem.directory('D:\\MyDartProjects\\twig_dart\\galileo_twig_dart\\example\\views')),
   );
 
-  app.get('/', (req, res) => res.render('index', {'title': 'Sample App', 'message': null}));
+  app.get('/', (req, res) => res.render('index', {'title': 'Sample App with Galileo 3.0', 'message': null}));
 
   app.post('/', (req, res) async {
     var body = await req.parseBody().then((_) => req.bodyAsMap);

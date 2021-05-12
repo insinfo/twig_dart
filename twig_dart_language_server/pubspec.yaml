@@ -1,22 +1,25 @@
 name: twig_dart_language_server
-version: 0.0.0
-description: Language Server Protocol implementation for the Jael templating engine.
+version: 3.0.0
+description: Language Server Protocol implementation for the Twig templating engine.
 author: Isaque Neves <insinfo2008@gmail.com>
 homepage: https://github.com/insinfo/twig_dart
+
 environment:
-  sdk: ">=2.0.0-dev <3.0.0"
+  sdk: ">=2.10.0 <3.0.0"
+
 dependencies:
-  args: ^1.0.0
-  dart_language_server: 0.1.14 #^0.1.3
-  file: ^5.0.0
-  io: ^0.3.2
-  jael: ^2.0.0
-  jael_preprocessor: ^2.0.0
-  json_rpc_2: ^2.0.0
-  logging: ^0.11.3
-  path: ^1.0.0
-  source_span: ^1.0.0
-  string_scanner: ^1.0.0
-  symbol_table: ^2.0.0
+  args: ^2.1.0 #Null safety
+  #dart_language_server: ^0.1.16 #0.1.14 #^0.1.3
+  galileo_dart_language_server: ^3.0.1
+  file: ^6.1.0 #Null safety
+  io: ^1.0.0 #Null safety
+  twig_dart: ^3.0.0 #Null safety
+  twig_dart_preprocessor: ^3.0.1 #Null safety
+  json_rpc_2: ^3.0.1 #Null safety
+  logging: ^1.0.1 #Null safety
+  path: ^1.8.0 #Null safety
+  source_span: ^1.8.1 #Null safety
+  string_scanner: ^1.1.0 #Null safety
+  essential_symbol_table: ^2.0.1 #Null safety
 executables:
   twig_dart_language_server: twig_dart_language_server

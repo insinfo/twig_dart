@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:args/args.dart';
-import 'package:dart_language_server/dart_language_server.dart';
+import 'package:galileo_dart_language_server/dart_language_server.dart';
 import 'package:io/ansi.dart';
 import 'package:io/io.dart';
 import 'package:twig_dart_language_server/twig_dart_language_server.dart';
@@ -12,7 +12,7 @@ main(List<String> args) async {
     ..addOption('log-file', help: 'A path to which to write a log file.');
 
   void printUsage() {
-    print('usage: jael_language_server [options...]\n\nOptions:');
+    print('usage: twig_language_server [options...]\n\nOptions:');
     print(argParser.usage);
   }
 
@@ -23,13 +23,13 @@ main(List<String> args) async {
       printUsage();
       return;
     } else {
-      var jaelServer = new JaelLanguageServer();
+      var twigServer = new TwigLanguageServer();
 
       if (argResults.wasParsed('log-file')) {
         var f = new File(argResults['log-file'] as String);
         await f.create(recursive: true);
 
-        jaelServer.logger.onRecord.listen((rec) async {
+        twigServer.logger.onRecord.listen((rec) async {
           var sink = await f.openWrite(mode: FileMode.append);
           sink.writeln(rec);
           if (rec.error != null) sink.writeln(rec.error);
@@ -37,7 +37,7 @@ main(List<String> args) async {
           await sink.close();
         });
       } else {
-        jaelServer.logger.onRecord.listen((rec) async {
+        twigServer.logger.onRecord.listen((rec) async {
           var sink = stderr;
           sink.writeln(rec);
           if (rec.error != null) sink.writeln(rec.error);
@@ -47,15 +47,15 @@ main(List<String> args) async {
 
       var spec = new ZoneSpecification(
         handleUncaughtError: (self, parent, zone, error, stackTrace) {
-          jaelServer.logger.severe('Uncaught', error, stackTrace);
+          twigServer.logger.severe('Uncaught', error, stackTrace);
         },
         print: (self, parent, zone, line) {
-          jaelServer.logger.info(line);
+          twigServer.logger.info(line);
         },
       );
       var zone = Zone.current.fork(specification: spec);
       await zone.run(() async {
-        var stdio = new StdIOLanguageServer.start(jaelServer);
+        var stdio = new StdIOLanguageServer.start(twigServer);
         await stdio.onDone;
       });
     }

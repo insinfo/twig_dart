@@ -6,12 +6,12 @@ part of 'main.dart';
 // JaelComponentGenerator
 // **************************************************************************
 
-abstract class _HelloJaelTemplate implements Component<dynamic> {
+abstract class _HelloTwigTemplate implements Component<dynamic> {
   DateTime get now;
   @override
   DomNode render() {
     return h('div', {}, [
-      h('h1', {}, [text('Hello, Jael!')]),
+      h('h1', {}, [text('Hello, twig!')]),
       h('i', {}, [text('Current time: '), text(now.toString())])
     ]);
   }

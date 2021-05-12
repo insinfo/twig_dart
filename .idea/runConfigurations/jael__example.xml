@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="jael::example" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
-    <option name="filePath" value="$PROJECT_DIR$/jael/example/main.dart" />
-    <option name="workingDirectory" value="$PROJECT_DIR$/jael" />
+  <configuration default="false" name="twig::example" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" singleton="true">
+    <option name="filePath" value="$PROJECT_DIR$/twig/example/main.dart" />
+    <option name="workingDirectory" value="$PROJECT_DIR$/twig" />
     <method />
   </configuration>
 </component>

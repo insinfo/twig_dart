@@ -1,11 +1,11 @@
 name: galileo_twig_dart
-version: 3.0.0
+version: 3.0.2
 description: Galileo support for the twig_dart templating engine, similar to Blade or Liquid.
 author: Isaque Neeves <insinfo2008@gmail.com>
 homepage: https://github.com/insinfo/twig_dart
 
 environment:
-  sdk: ">=2.10.0 <=3.0.0"
+  sdk: ">=2.10.0 <3.0.0"
 
 dependencies:
   galileo_framework: ^3.0.2 
@@ -17,5 +17,6 @@ dependencies:
   
 dev_dependencies:
   galileo_test: ^3.0.1 
-  html:
-  test: 
+  html: ^0.15.0 #Null safety
+  test: ^1.17.3 #Null safety
+  logging: ^1.0.1 #Null safety
